@@ -3,8 +3,8 @@ import os, sys
 import cv2
 import numpy as np
 import math
-
-
+import  asyncio
+from datetime import datetime
 # Helper
 def face_confidence(face_distance, face_match_threshold=0.6):
     range = (1.0 - face_match_threshold)
@@ -29,19 +29,30 @@ class FaceRecognition:
         self.encode_faces()
 
     def encode_faces(self):
-        for image in os.listdir('faces'):
-            face_image = face_recognition.load_image_file(f"faces/{image}")
-            face_encoding = face_recognition.face_encodings(face_image)[0]
-
-            self.known_face_encodings.append(face_encoding)
-            self.known_face_names.append(image)
-        print(self.known_face_names)
+        faces  = os.listdir('faces/crop')
+        start = datetime.now()
+        counter = 0
+        for image in faces:
+            try:
+                print (f"{image} face processed")
+                face_image = face_recognition.load_image_file(f"faces/crop/{image}")
+                face_encoding = face_recognition.face_encodings(face_image)[0]
+                self.known_face_encodings.append(face_encoding)
+                self.known_face_names.append(image)
+                counter += 1
+            except:
+                pass
+        end = datetime.now()
+        run_time = end - start
+        
+        print(f"encoding time for {len(faces)} face is : {run_time}")
+        # print(self.known_face_names)
 
     def run_recognition(self):
         video_capture = cv2.VideoCapture(0)
 
         if not video_capture.isOpened():
-            sys.exit('Video source not found...')
+            sys.exit('Video source not found ...')
 
         while True:
             ret, frame = video_capture.read()
